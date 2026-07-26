@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#070707">
+    <title>Title — StreamFlix</title>
+    <link rel="stylesheet" href="../content/catalog.css">
+    <style>
+      .detail { min-height: 100vh; padding: 100px clamp(20px,6vw,90px) 80px; }
+      .detail-backdrop { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: .38; }
+      .detail-shade { position: fixed; inset: 0; z-index: -1; background: linear-gradient(90deg,#080808 12%,rgba(8,8,8,.8),#080808 95%); }
+      .back { color: #ccc; }
+      .player { width: min(1100px,100%); margin: 30px 0; border-radius: 10px; background:#000; box-shadow:0 25px 80px #000; }
+      .detail-copy { max-width: 780px; }
+      .detail h1 { margin: 20px 0 8px; font-size: clamp(40px,7vw,76px); line-height:1; }
+      .detail-meta { display:flex; gap:12px; color:#ccc; }
+      .detail-description { font-size:clamp(17px,2vw,21px); line-height:1.55; }
+      .list-button { border:0; cursor:pointer; }
+    </style>
+  </head>
+  <body>
+    <main class="detail" id="detail">
+      <a class="back" href="browse.html">← Back to browse</a>
+      <div id="detail-content"><p>Loading title…</p></div>
+    </main>
+    <script>
+      const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      })[character]);
+      const id = new URLSearchParams(location.search).get("id");
+      const root = document.querySelector("#detail-content");
+      if (!id) root.innerHTML = "<p>No title was selected.</p>";
+      else fetch(`/api/content/${encodeURIComponent(id)}`)
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error("Title not found")))
+        .then(({ content }) => {
+          document.title = `${content.title} — StreamFlix`;
+          const backdrop = content.backdrop_url || content.poster_url;
+          root.innerHTML = `
+            ${backdrop ? `<img class="detail-backdrop" src="${escapeHtml(backdrop)}" alt="">` : ""}
+            <div class="detail-shade"></div>
+            ${content.video_url ? `<video class="player" controls playsinline poster="${escapeHtml(backdrop || "")}" src="${escapeHtml(content.video_url)}"></video>` : ""}
+            <div class="detail-copy">
+              <h1>${escapeHtml(content.title)}</h1>
+              <div class="detail-meta">
+                ${content.match_score ? `<span class="match">${content.match_score}% Match</span>` : ""}
+                <span>${escapeHtml(content.year || "")}</span>
+                <span>${escapeHtml(content.maturity_rating || "")}</span>
+                <span>${escapeHtml(content.duration || "")}</span>
+              </div>
+              <p class="detail-description">${escapeHtml(content.description)}</p>
+              <button class="button button-secondary list-button" id="my-list">＋ My List</button>
+            </div>`;
+          const button = document.querySelector("#my-list");
+          const saved = new Set(JSON.parse(localStorage.getItem("streamflix_mylist") || "[]"));
+          const refresh = () => button.textContent = saved.has(content.id) ? "✓ In My List" : "＋ My List";
+          refresh();
+          button.addEventListener("click", () => {
+            if (saved.has(content.id)) saved.delete(content.id); else saved.add(content.id);
+            localStorage.setItem("streamflix_mylist", JSON.stringify([...saved]));
+            refresh();
+          });
+        })
+        .catch((error) => root.innerHTML = `<p>${escapeHtml(error.message)}</p>`);
+    </script>
+  </body>
+</html>

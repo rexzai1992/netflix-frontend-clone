@@ -1,0 +1,19 @@
+{
+  "name": "streamflix-content-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit && node --test tests/*.test.mjs",
+    "test:e2e": "node tests/live-smoke.mjs",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run check && npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260726.1",
+    "playwright": "^1.62.0",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.114.0"
+  }
+}

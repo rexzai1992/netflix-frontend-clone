@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-view="home">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#070707">
+    <meta name="description" content="Browse the StreamFlix catalog">
+    <title>StreamFlix — Watch movies and shows</title>
+    <link rel="stylesheet" href="../content/catalog.css">
+    <script src="../content/catalog.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar" id="topbar">
+      <a class="brand" href="browse.html" data-site-name>STREAMFLIX</a>
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a data-route="home" href="browse.html">Home</a>
+        <a data-route="shows" href="tvshow.html">TV Shows</a>
+        <a data-route="movies" href="movies.html">Movies</a>
+        <a data-route="latest" href="latest.html">Latest</a>
+        <a data-route="mylist" href="mylist.html">My List</a>
+      </nav>
+      <div class="top-actions">
+        <a class="search-link" href="search.html" aria-label="Search">⌕</a>
+        <a class="admin-link" href="/admin/">Manage</a>
+        <span class="avatar" aria-hidden="true">S</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="hero" aria-labelledby="hero-title">
+        <div class="hero-media" id="hero-media"></div>
+        <div class="hero-shade"></div>
+        <div class="hero-content">
+          <p class="eyebrow" id="hero-kicker">Featured today</p>
+          <div class="hero-logo" id="hero-logo"></div>
+          <h1 id="hero-title">Loading your catalog…</h1>
+          <p class="hero-description" id="hero-description"></p>
+          <div class="hero-meta" id="hero-meta"></div>
+          <div class="hero-actions">
+            <a class="button button-primary" id="hero-play" href="#">▶ Play</a>
+            <a class="button button-secondary" id="hero-info" href="#">ⓘ More info</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="catalog-shell" aria-live="polite">
+        <div class="search-panel" id="search-panel" hidden>
+          <label for="catalog-search">Search titles and descriptions</label>
+          <input id="catalog-search" type="search" placeholder="Try “mystery”" autocomplete="off">
+        </div>
+        <div id="catalog-status" class="status">Loading titles…</div>
+        <div id="catalog-rows"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p><span data-site-name>StreamFlix</span> content studio demo.</p>
+      <a href="/admin/">Manage content</a>
+    </footer>
+  </body>
+</html>

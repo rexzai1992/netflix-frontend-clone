@@ -1,3 +1,63 @@
+# StreamFlix Content Studio
+
+This fork is deployed as a Cloudflare Worker with:
+
+- A responsive, API-driven movie and TV catalog
+- A password-protected content studio at `/admin/`
+- Cloudflare D1 for titles, descriptions, settings, collections, and ordering
+- Cloudflare R2 for posters, backdrops, title logos, and videos
+- Resumable multipart uploads and byte-range video playback
+
+Production: <https://netflix-content-studio.izzulfitreee.workers.dev>
+
+## Change content
+
+1. Open the production `/admin/` page.
+2. Sign in with the admin password.
+3. Select an existing title or choose **Add title**.
+4. Update the text, publishing state, homepage position, and collections.
+5. Upload or replace the poster, backdrop, title logo, and video.
+6. Save. Published changes appear without redeploying the website.
+
+Use MP4 with H.264/AAC for the widest browser video compatibility. Supported
+images are JPEG, PNG, WebP, and AVIF; supported videos are MP4 and WebM.
+
+## Local development
+
+```bash
+npm install
+cp .dev.vars.example .dev.vars
+npm run build
+npx wrangler d1 migrations apply netflix-content-studio --local
+npm run dev
+```
+
+The deployable static output is generated in `dist/`. Videos are intentionally
+excluded from the static bundle because they are stored in R2.
+
+## Validation and deployment
+
+```bash
+npm run check
+npm run build
+npm run test:e2e
+npx wrangler d1 migrations apply netflix-content-studio --remote
+npx wrangler deploy
+```
+
+Production secrets are configured with:
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put SESSION_SECRET
+```
+
+Never commit `.dev.vars`, passwords, API tokens, or R2 credentials. The original
+sample contains third-party branding and trailers; replace them with media you
+are authorized to publish before promoting the site publicly.
+
+## Original project
+
 <p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/shapeShifterGray.gif" alt="Gray shape shifter" height="60"/></a></p>
 <h1 align="center">Netflix Frontend Clone</h1>
 <p align="center">Video streaming website Netflix Frontend clone, Built with Pure CSS3 using Flexbox, JS dependencies: OwlCarousel and JQuery</p>
