@@ -1,2 +1,13 @@
+# Copy to .dev.vars for local development. Never commit real values.
 ADMIN_PASSWORD=change-this-local-password
 SESSION_SECRET=replace-with-at-least-32-random-characters
+
+# Optional — leave unset to run billing in dev mode (demo checkout, no payments).
+# STRIPE_SECRET_KEY=sk_test_...
+# STRIPE_WEBHOOK_SECRET=whsec_...
+# STRIPE_PRICE_MONTHLY=price_...
+# STRIPE_PRICE_YEARLY=price_...
+
+# Optional tuning
+# USER_SESSION_TTL_SECONDS=2592000
+# PBKDF2_ITERATIONS=100000

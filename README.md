@@ -1,89 +1,81 @@
-# StreamFlix Content Studio
+# StreamFlix
 
-This fork is deployed as a Cloudflare Worker with:
+A subscription streaming platform on Cloudflare Workers:
 
-- A responsive, API-driven movie and TV catalog
-- A password-protected content studio at `/admin/`
-- Cloudflare D1 for titles, descriptions, settings, collections, and ordering
-- Cloudflare R2 for posters, backdrops, title logos, and videos
-- Resumable multipart uploads and byte-range video playback
+- Public catalog with search, collections, and a featured hero
+- Viewer accounts with subscriptions (Stripe, or a built-in demo billing mode)
+- Video streaming gated on an active subscription, served from R2 with byte-range support
+- My List and Continue Watching synced to each account
+- A password-protected content studio at `/admin/` for managing every part of the site
+- Cloudflare D1 for data, R2 for media — no other infrastructure
 
-Production: <https://netflix-content-studio.izzulfitreee.workers.dev>
+Production: <https://streamflix.izzulfitreee.workers.dev>
 
-## Change content
+All bundled sample films are Blender Foundation open movies (CC-BY); *Our Golden Night*
+is an original StreamFlix title. Attribution is shown in the site footer.
 
-1. Open the production `/admin/` page.
-2. Sign in with the admin password.
-3. Select an existing title or choose **Add title**.
-4. Update the text, publishing state, homepage position, and collections.
-5. Upload or replace the poster, backdrop, title logo, and video.
-6. Save. Published changes appear without redeploying the website.
+## Architecture
 
-Use MP4 with H.264/AAC for the widest browser video compatibility. Supported
-images are JPEG, PNG, WebP, and AVIF; supported videos are MP4 and WebM.
+```
+Cloudflare Worker (src/worker/)
+├── index.ts    router, security headers + CSP, error handling
+├── auth.ts     viewer + admin sessions (D1-backed, revocable, CSRF)
+├── billing.ts  plans, Stripe checkout/webhooks, dev billing mode
+├── me.ts       my list, continue watching, password change
+├── public.ts   catalog API
+├── admin.ts    content/collections/settings/media/audit admin API
+├── uploads.ts  multipart R2 uploads, magic-byte validation, cleanup
+└── media.ts    R2 media serving with subscription gating
+
+D1 database: streamflix        (migrations/ — apply with wrangler d1 migrations)
+R2 bucket:   streamflix-media  (catalog/  = seeded licensed media,
+                                uploads/  = admin-uploaded media,
+                                generated/ = generated artwork)
+Static site: dist/ (built from src/site/ by scripts/build.mjs)
+```
 
 ## Local development
 
 ```bash
 npm install
-cp .dev.vars.example .dev.vars
+cp .dev.vars.example .dev.vars   # then edit values
 npm run build
-npx wrangler d1 migrations apply netflix-content-studio --local
+npx wrangler d1 migrations apply streamflix --local
 npm run dev
 ```
-
-The deployable static output is generated in `dist/`. Videos are intentionally
-excluded from the static bundle because they are stored in R2.
 
 ## Validation and deployment
 
 ```bash
-npm run check
-npm run build
-npm run test:e2e
-npx wrangler d1 migrations apply netflix-content-studio --remote
-npx wrangler deploy
+npm run check      # typecheck + build + unit/integration tests (spins up wrangler dev)
+npm run deploy     # check + build + wrangler deploy
+npm run test:e2e   # Playwright smoke test against the live site
 ```
 
-Production secrets are configured with:
+Remote migrations: `npx wrangler d1 migrations apply streamflix --remote`
 
-```bash
-npx wrangler secret put ADMIN_PASSWORD
-npx wrangler secret put SESSION_SECRET
-```
+## Secrets (wrangler secret put …)
 
-Never commit `.dev.vars`, passwords, API tokens, or R2 credentials. The original
-sample contains third-party branding and trailers; replace them with media you
-are authorized to publish before promoting the site publicly.
+| Secret | Purpose |
+| --- | --- |
+| `ADMIN_PASSWORD` | Bootstrap admin password (changeable afterwards in the studio Security panel) |
+| `SESSION_SECRET` | ≥32 random chars; peppers password hashes |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY` | Optional; unset = demo billing mode (no real payments) |
 
-## Original project
+## Media requirements
 
-<p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/shapeShifterGray.gif" alt="Gray shape shifter" height="60"/></a></p>
-<h1 align="center">Netflix Frontend Clone</h1>
-<p align="center">Video streaming website Netflix Frontend clone, Built with Pure CSS3 using Flexbox, JS dependencies: OwlCarousel and JQuery</p>
+- **Video**: MP4 (H.264 + AAC) strongly recommended; WebM accepted. ≤2 GB.
+- **Images**: JPEG, PNG, WebP, or AVIF. ≤15 MB. Posters 2:3, backdrops 16:9.
+- **Captions**: WebVTT (`.vtt`).
+- Uploads are validated server-side (type, size, magic bytes) and stored under
+  versioned keys, so replacing media never serves stale files.
 
-<p align="center">
-	<a href="https://github.com/Rajesh-Royal/netflix-frontend-clone"><img src="https://github.com/Rajesh-Royal/netflix-frontend-clone/blob/master/images/directory%20size.png" height="30"/></a>
-    <a href="https://twitter.com/intent/tweet?text=Video streaming website Netflix Frontend clone. Frontend - HTML5, CSS3, JS.&url=https://github.com/Rajesh-Royal/netflix-frontend-clone&hashtags=javascript,opensource,js,webdev,developers"><img src="http://randojs.com/images/tweetShield.svg" alt="Tweet" height="30"/></a>
-</p><br/><br/>
+## Documentation
 
-<button> hello </button>
+- [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) — using the content studio
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) — deploys, backups, rollback, monitoring
 
-<p align="center"><a href="https://bit.ly/3ieQxBG"><img src="https://github.com/Rajesh-Royal/netflix-frontend-clone/blob/master/images/final%20screenshot%20readme%20preview.jpg" width="100%"/></a><a href="#nastyox"></a></p><br/>
+## License note
 
-### Demo links 🚁😊🚁
-
-##### Login/landing page
-https://netflix-frontend-clone-theta.vercel.app/
-
-##### User Dashboard
-https://netflix-frontend-clone-theta.vercel.app/user_dashboard/browse.html
-
-## Preview screen
-![img description](https://github.com/Rajesh-Royal/netflix-clone-cideigniter/blob/master/images/screenshot.jpg)
-
-
-### License 
-
- ###### <a href="https://github.com/Rajesh-Royal/netflix-frontend-clone/blob/master/LICENSE" target="_blank">GNU GENERAL PUBLIC LICENSE</a>
- Version 3, 29 June 2007
+This repository began as a fork of a GPL-3.0 front-end clone; the original static
+front-end has been removed and replaced. The GPL-3.0 license is retained (see LICENSE).

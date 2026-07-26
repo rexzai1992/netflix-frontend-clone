@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="StreamFlix">
+  <rect width="64" height="64" rx="13" fill="#0b0b0b"/>
+  <rect width="64" height="64" rx="13" fill="none" stroke="#1f1f1f" stroke-width="2"/>
+  <text x="32" y="48" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-size="46" font-weight="900" fill="#e50914">S</text>
+</svg>

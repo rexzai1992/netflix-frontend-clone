@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "netflix-content-studio",
+  "name": "streamflix",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-07-26",
   "workers_dev": true,
@@ -12,15 +12,15 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "netflix-content-studio",
-      "database_id": "dd3c6988-a36e-4b9e-a48a-a7a5ad37f724",
+      "database_name": "streamflix",
+      "database_id": "1bd16345-b4fc-4188-9dc2-18f715d286a7",
       "migrations_dir": "migrations"
     }
   ],
   "r2_buckets": [
     {
       "binding": "MEDIA",
-      "bucket_name": "netflix-content-studio-media"
+      "bucket_name": "streamflix-media"
     }
   ],
   "vars": {
