@@ -183,10 +183,11 @@ for (const [collectionId, slugs] of Object.entries(COLLECTIONS)) {
 lines.push(
   "-- Footer attribution for the open movies.",
   `INSERT INTO site_settings (key, value, updated_at) VALUES ('attribution', ${q(
-    delivered
-      .filter((entry) => entry.slug !== "our-golden-night")
-      .map((entry) => entry.attribution)
-      .join(" · "),
+    [...new Set(
+      delivered
+        .filter((entry) => entry.slug !== "our-golden-night")
+        .map((entry) => entry.attribution),
+    )].join(" · "),
   )}, CURRENT_TIMESTAMP)`,
   "ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP;",
   "",
