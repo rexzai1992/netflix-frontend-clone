@@ -34,7 +34,11 @@
         </a>
         <nav>
           <button class="nav-button active" data-panel="library">Library</button>
-          <button class="nav-button" data-panel="settings">Site settings</button>
+          <button class="nav-button" data-panel="collections">Collections</button>
+          <button class="nav-button" data-panel="site">Site</button>
+          <button class="nav-button" data-panel="media">Media</button>
+          <button class="nav-button" data-panel="activity">Activity</button>
+          <button class="nav-button" data-panel="security">Security</button>
         </nav>
         <div class="sidebar-bottom">
           <a href="/user_dashboard/browse.html" target="_blank">View live site ↗</a>
@@ -65,7 +69,33 @@
           <div class="library-grid" id="library-grid"></div>
         </section>
 
-        <section class="panel" id="settings-panel">
+        <section class="panel" id="collections-panel">
+          <div class="collections-layout">
+            <div class="side-card">
+              <form class="inline-form" id="collection-create">
+                <input name="title" maxlength="120" placeholder="New collection title" required>
+                <button class="primary" type="submit">Create</button>
+              </form>
+              <p class="hint">Rows appear on the homepage in this order. Deleting a collection never deletes its titles.</p>
+              <ul class="collection-list" id="collection-list"></ul>
+            </div>
+            <div class="side-card">
+              <p class="muted" id="collection-items-empty">Select a collection to manage which titles it shows, and in what order. This is also how titles move between homepage sections.</p>
+              <div id="collection-items-manager" hidden>
+                <h2 id="collection-items-title"></h2>
+                <div class="picker">
+                  <label>Add title
+                    <input id="add-title-search" type="search" placeholder="Search all titles…" autocomplete="off">
+                  </label>
+                  <div class="picker-results" id="add-title-results" hidden></div>
+                </div>
+                <ol class="collection-items" id="collection-items"></ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="site-panel">
           <form class="settings-card" id="settings-form">
             <p class="overline">Public website</p>
             <h2>Site text</h2>
@@ -74,10 +104,103 @@
               <label>Hero label<input name="hero_kicker" maxlength="120"></label>
               <label class="wide">Landing headline<input name="landing_title" maxlength="200"></label>
               <label class="wide">Landing subtitle<input name="landing_subtitle" maxlength="300"></label>
+              <label class="wide">SEO description<textarea name="seo_description" rows="3" maxlength="320" placeholder="Shown in search results and link previews."></textarea></label>
             </div>
+
+            <h2>Site images</h2>
+            <p class="hint">Uploads are stored immediately; press “Save site settings” to point the site at the new files.</p>
+            <div class="media-grid">
+              <div class="media-field" data-kind="landing" data-key-name="landing_backdrop_key">
+                <div class="media-preview"></div>
+                <label>Landing backdrop (16:9)<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+                <input type="hidden" name="landing_backdrop_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
+                <span class="upload-state"></span>
+              </div>
+              <div class="media-field" data-kind="social" data-key-name="social_image_key">
+                <div class="media-preview"></div>
+                <label>Social share image (16:9)<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+                <input type="hidden" name="social_image_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
+                <span class="upload-state"></span>
+              </div>
+            </div>
+
             <div class="form-actions">
               <span class="form-message" id="settings-message"></span>
-              <button class="primary" type="submit">Save site text</button>
+              <button class="primary" type="submit">Save site settings</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel" id="media-panel">
+          <div class="toolbar">
+            <select id="media-filter" aria-label="Filter media">
+              <option value="">All files</option>
+              <option value="unused">Unused only</option>
+            </select>
+            <span class="toolbar-spacer"></span>
+            <button class="secondary" id="media-abort-stale" type="button">Abort stale uploads</button>
+            <button class="secondary danger" id="media-cleanup" type="button">Clean up unused uploads</button>
+          </div>
+          <div class="summary" id="media-summary"></div>
+          <div class="table-wrap">
+            <table class="data-table" id="media-table">
+              <thead>
+                <tr><th>File</th><th>Key</th><th>Size</th><th>Uploaded</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="media-rows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="activity-panel">
+          <div class="toolbar">
+            <span class="summary" id="audit-summary"></span>
+            <span class="toolbar-spacer"></span>
+            <button class="secondary" id="audit-refresh" type="button">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="audit-table">
+              <thead>
+                <tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr>
+              </thead>
+              <tbody id="audit-rows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel" id="security-panel">
+          <form class="settings-card" id="password-form">
+            <p class="overline">Access</p>
+            <h2>Change admin password</h2>
+            <p class="hint">New password must be at least 12 characters. Every other admin session is signed out immediately after the change.</p>
+            <div class="form-grid">
+              <label class="wide">Current password<input name="current" type="password" autocomplete="current-password" required></label>
+              <label>New password<input name="next" type="password" autocomplete="new-password" minlength="12" required></label>
+              <label>Confirm new password<input name="confirm" type="password" autocomplete="new-password" minlength="12" required></label>
+            </div>
+            <div class="form-actions">
+              <span class="form-message" id="password-message"></span>
+              <button class="primary" type="submit">Update password</button>
             </div>
           </form>
         </section>
@@ -113,7 +236,7 @@
           <fieldset>
             <legend>Display</legend>
             <label class="switch-row"><span><strong>Published</strong><small>Visible on the public site</small></span><input name="published" type="checkbox" checked></label>
-            <label class="switch-row"><span><strong>Featured hero</strong><small>Use this title in the large hero area</small></span><input name="featured" type="checkbox"></label>
+            <label class="switch-row"><span><strong>Set as the homepage hero (replaces current hero)</strong><small>Only one title can be the hero at a time.<span id="hero-note"></span></small></span><input name="featured" type="checkbox"></label>
           </fieldset>
 
           <fieldset>
@@ -122,31 +245,87 @@
           </fieldset>
 
           <fieldset>
-            <legend>Images and video</legend>
-            <p class="hint">Images: JPG, PNG, WebP or AVIF. Video: MP4 or WebM. Uploads are resumable.</p>
+            <legend>Images, video, and captions</legend>
+            <p class="hint">Images: JPG, PNG, WebP or AVIF (you can crop before uploading). Video: MP4 or WebM. Captions: WebVTT (.vtt). Choosing a new file replaces the current one; “Remove” only clears the reference — the file stays in R2 until you run Media → “Clean up unused uploads”.</p>
             <div class="media-grid">
-              <div class="media-field" data-kind="poster">
+              <div class="media-field" data-kind="poster" data-key-name="poster_key">
                 <div class="media-preview"></div>
-                <label>Poster image<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+                <label>Poster image (2:3)<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
                 <input type="hidden" name="poster_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
                 <span class="upload-state"></span>
               </div>
-              <div class="media-field" data-kind="backdrop">
+              <div class="media-field" data-kind="backdrop" data-key-name="backdrop_key">
                 <div class="media-preview"></div>
-                <label>Backdrop image<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+                <label>Backdrop image (16:9)<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
                 <input type="hidden" name="backdrop_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
                 <span class="upload-state"></span>
               </div>
-              <div class="media-field" data-kind="logo">
+              <div class="media-field" data-kind="logo" data-key-name="logo_key">
                 <div class="media-preview contain"></div>
                 <label>Title logo<input type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
                 <input type="hidden" name="logo_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
                 <span class="upload-state"></span>
               </div>
-              <div class="media-field" data-kind="video">
+              <div class="media-field" data-kind="video" data-key-name="video_key">
                 <div class="media-preview"></div>
                 <label>Video<input type="file" accept="video/mp4,video/webm"></label>
                 <input type="hidden" name="video_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
+                <span class="upload-state"></span>
+              </div>
+              <div class="media-field" data-kind="captions" data-key-name="captions_key">
+                <div class="media-preview text"></div>
+                <label>Captions (.vtt)<input type="file" accept="text/vtt,.vtt"></label>
+                <input type="hidden" name="captions_key">
+                <div class="media-buttons">
+                  <button type="button" class="mini-button media-remove">Remove</button>
+                </div>
+                <div class="upload-ui" hidden>
+                  <div class="progress"><div class="progress-fill"></div></div>
+                  <div class="upload-buttons">
+                    <button type="button" class="mini-button upload-retry" hidden>Retry</button>
+                    <button type="button" class="mini-button upload-cancel">Cancel</button>
+                  </div>
+                </div>
                 <span class="upload-state"></span>
               </div>
             </div>
@@ -161,5 +340,24 @@
         </footer>
       </form>
     </aside>
+
+    <div class="modal-backdrop" id="crop-backdrop" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+        <h3 id="crop-title">Prepare image</h3>
+        <p class="hint" id="crop-hint"></p>
+        <div class="crop-stage"><canvas id="crop-canvas"></canvas></div>
+        <label class="crop-slider-row" id="crop-slider-row">
+          Crop position
+          <input type="range" id="crop-offset" min="0" max="100" value="50">
+        </label>
+        <div class="modal-actions">
+          <button class="secondary" id="crop-cancel" type="button">Cancel</button>
+          <button class="secondary" id="crop-original" type="button">Use original</button>
+          <button class="primary" id="crop-use" type="button">Use cropped image</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toasts" id="toasts" aria-live="polite"></div>
   </body>
 </html>
