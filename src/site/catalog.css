@@ -1,16 +1,3 @@
-@font-face {
-  font-family: Stream Sans;
-  src: url("../assets/fonts/Regular.woff2") format("woff2");
-  font-display: swap;
-}
-
-@font-face {
-  font-family: Stream Sans;
-  src: url("../assets/fonts/Medium.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-
 :root {
   color-scheme: dark;
   --red: #e50914;
@@ -28,7 +15,7 @@ body {
   margin: 0;
   color: #fff;
   background: var(--ink);
-  font-family: "Stream Sans", "Helvetica Neue", Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -69,22 +56,21 @@ button, input { font: inherit; }
 
 .search-link { font-size: 28px; line-height: 1; }
 
-.admin-link {
+.user-menu { display: flex; align-items: center; gap: 10px; }
+
+.pill-link {
+  display: inline-block;
+  padding: 7px 13px;
+  color: #fff;
   border: 1px solid var(--edge);
   border-radius: 6px;
-  padding: 7px 12px;
+  background: transparent;
   font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.avatar {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #13795b, #29a37f);
-  font-weight: 700;
-}
+.pill-link:hover { background: rgba(255, 255, 255, .1); }
 
 .nav-toggle {
   display: none;
@@ -259,6 +245,81 @@ button, input { font: inherit; }
 .card-title { display: block; font-weight: 700; }
 .card-meta { color: #cfcfcf; font-size: 12px; }
 
+.card-progress {
+  display: block;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .28);
+  overflow: hidden;
+}
+
+.card-progress span { display: block; height: 100%; background: var(--red); }
+
+/* My List cards get a floating remove control. */
+.card-holder { position: relative; scroll-snap-align: start; }
+.card-holder .content-card { width: 100%; height: 100%; }
+
+.card-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 4;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .74);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.card-remove:hover { background: var(--red); }
+.card-remove:disabled { opacity: .5; cursor: default; }
+
+/* Loading skeletons shown while the catalog request is in flight. */
+.skeleton-line {
+  width: min(260px, 40%);
+  height: 22px;
+  margin-bottom: 14px;
+  border-radius: 5px;
+  background: var(--panel);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-card {
+  aspect-ratio: 16 / 9;
+  border-radius: 7px;
+  background: var(--panel);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+.error-panel {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  margin: 40px 0;
+  padding: 44px 24px;
+  border: 1px solid #58181c;
+  border-radius: 8px;
+  background: #180d0e;
+  color: #ffb3b8;
+  text-align: center;
+}
+
+.error-panel p { margin: 0; }
+.error-panel[hidden] { display: none; }
+
+.empty-cta { display: grid; gap: 16px; justify-items: center; }
+.empty-cta p { margin: 0; }
+
 .search-panel {
   padding: 95px 0 40px;
 }
@@ -294,7 +355,8 @@ button, input { font: inherit; }
 footer {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
   padding: 40px clamp(20px, 4vw, 64px);
   color: #8d8d8d;
   border-top: 1px solid #1e1e1e;
@@ -313,7 +375,7 @@ footer {
   }
   .main-nav.open { display: grid; gap: 18px; }
   .top-actions { order: 3; }
-  .admin-link, .avatar { display: none; }
+  .pill-link { padding: 6px 10px; font-size: 12px; }
   .hero { min-height: 72vh; }
   .hero-content { padding-bottom: 95px; }
   .hero-shade {

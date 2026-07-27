@@ -4,10 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#070707">
-    <meta name="description" content="Browse the StreamFlix catalog">
-    <title>StreamFlix — Watch movies and shows</title>
+    <meta name="description" content="Browse movies and TV shows on StreamFlix. Watch anywhere, cancel anytime.">
+    <title>Browse — StreamFlix</title>
+    <link rel="icon" href="../content/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="../content/catalog.css">
-    <script src="../content/catalog.js" defer></script>
+    <link rel="stylesheet" href="../content/site.css">
+    <script type="module" src="../content/catalog.js"></script>
   </head>
   <body>
     <header class="topbar" id="topbar">
@@ -22,8 +24,9 @@
       </nav>
       <div class="top-actions">
         <a class="search-link" href="search.html" aria-label="Search">⌕</a>
-        <a class="admin-link" href="/admin/">Manage</a>
-        <span class="avatar" aria-hidden="true">S</span>
+        <nav class="user-menu" id="user-menu" aria-label="Account">
+          <a class="pill-link" href="/login.html">Sign In</a>
+        </nav>
       </div>
     </header>
 
@@ -37,9 +40,9 @@
           <h1 id="hero-title">Loading your catalog…</h1>
           <p class="hero-description" id="hero-description"></p>
           <div class="hero-meta" id="hero-meta"></div>
-          <div class="hero-actions">
+          <div class="hero-actions" id="hero-actions" hidden>
             <a class="button button-primary" id="hero-play" href="#">▶ Play</a>
-            <a class="button button-secondary" id="hero-info" href="#">ⓘ More info</a>
+            <a class="button button-secondary" id="hero-info" href="#">ⓘ More Info</a>
           </div>
         </div>
       </section>
@@ -50,13 +53,18 @@
           <input id="catalog-search" type="search" placeholder="Try “mystery”" autocomplete="off">
         </div>
         <div id="catalog-status" class="status">Loading titles…</div>
+        <div class="error-panel" id="catalog-error" hidden>
+          <p id="catalog-error-message">The catalog could not be loaded.</p>
+          <button class="button button-secondary" id="catalog-retry" type="button">Retry</button>
+        </div>
         <div id="catalog-rows"></div>
       </section>
     </main>
 
     <footer>
-      <p><span data-site-name>StreamFlix</span> content studio demo.</p>
-      <a href="/admin/">Manage content</a>
+      <p><span data-site-name-plain>StreamFlix</span> — a demo streaming service.</p>
+      <p id="footer-attribution" hidden></p>
+      <p>Includes open movies by Blender Foundation (CC-BY)</p>
     </footer>
   </body>
 </html>
