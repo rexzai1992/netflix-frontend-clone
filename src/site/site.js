@@ -1,4 +1,6 @@
-// Shared helpers for the StreamFlix public pages.
+// Shared helpers for the StreamFlix pages. No accounts, no sessions — every
+// viewer-specific bit of state (My List, playback progress) lives in
+// localStorage on the device that made it.
 
 export const $ = (selector, scope = document) => scope.querySelector(selector);
 
@@ -33,49 +35,105 @@ export async function fetchJson(path, options = {}) {
   return { ok: response.ok, status: response.status, data };
 }
 
-export async function fetchSession() {
+/* ---------- Local storage: My List + playback progress ---------- */
+
+const MY_LIST_KEY = "streamflix_mylist";
+const PROGRESS_KEY = "streamflix_progress";
+
+// Private browsing and disabled storage both throw — degrade to "no state".
+function readStore(key, fallback) {
   try {
-    const { ok, data } = await fetchJson("/api/auth/session");
-    return ok && data ? data : { authenticated: false };
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed === null || parsed === undefined ? fallback : parsed;
   } catch {
-    return { authenticated: false };
+    return fallback;
   }
 }
 
-export async function fetchMe() {
+function writeStore(key, value) {
   try {
-    const { ok, data } = await fetchJson("/api/me");
-    return ok ? data : null;
+    localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    return null;
+    // Nothing to do — the page still works without saved state.
   }
 }
 
-// JSON write helper; pass csrf for everything outside /api/auth/*.
-export function apiWrite(path, { method = "POST", csrf, body } = {}) {
-  const headers = { "content-type": "application/json" };
-  if (csrf) headers["x-csrf-token"] = csrf;
-  return fetchJson(path, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+// My List is a JSON array of content ids, in the order they were saved.
+export function getMyList() {
+  const stored = readStore(MY_LIST_KEY, []);
+  if (!Array.isArray(stored)) return [];
+  return stored.filter((id) => typeof id === "string" && id !== "");
 }
 
-// Only allow same-origin path redirects (e.g. "/account/"), never "//host" or URLs.
-export function safeNextPath(raw, fallback = "/user_dashboard/browse.html") {
-  if (typeof raw === "string" && /^\/(?!\/)/.test(raw)) return raw;
-  return fallback;
+export function isInMyList(id) {
+  return getMyList().includes(String(id));
 }
 
-export function formatDate(unixSeconds) {
-  if (!unixSeconds) return "";
-  return new Date(unixSeconds * 1000).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+export function addToMyList(id) {
+  const list = getMyList();
+  const key = String(id);
+  if (!list.includes(key)) list.push(key);
+  writeStore(MY_LIST_KEY, list);
+  return list;
 }
+
+export function removeFromMyList(id) {
+  const key = String(id);
+  const list = getMyList().filter((entry) => entry !== key);
+  writeStore(MY_LIST_KEY, list);
+  return list;
+}
+
+// Progress is a JSON object: contentId -> { position, duration, updated }.
+function getProgressMap() {
+  const stored = readStore(PROGRESS_KEY, {});
+  if (!stored || typeof stored !== "object" || Array.isArray(stored)) return {};
+  return stored;
+}
+
+function normalizeProgress(id, entry) {
+  if (!entry || typeof entry !== "object") return null;
+  return {
+    id: String(id),
+    position: Number(entry.position) || 0,
+    duration: Number(entry.duration) || 0,
+    updated: Number(entry.updated) || 0,
+  };
+}
+
+export function getProgress(id) {
+  return normalizeProgress(id, getProgressMap()[String(id)]);
+}
+
+export function setProgress(id, position, duration) {
+  const map = getProgressMap();
+  map[String(id)] = {
+    position: Math.max(0, Math.floor(Number(position) || 0)),
+    duration: Math.max(0, Math.floor(Number(duration) || 0)),
+    updated: Date.now(),
+  };
+  writeStore(PROGRESS_KEY, map);
+}
+
+// Worth resuming: past the opening seconds, not effectively finished.
+export function isResumable(entry) {
+  if (!entry || !(entry.position > 20)) return false;
+  if (entry.duration > 0 && entry.position / entry.duration >= 0.95) return false;
+  return true;
+}
+
+// Most recently watched first, for the Continue Watching row.
+export function listProgress(limit = 12) {
+  return Object.entries(getProgressMap())
+    .map(([id, entry]) => normalizeProgress(id, entry))
+    .filter((entry) => entry && isResumable(entry))
+    .sort((a, b) => b.updated - a.updated)
+    .slice(0, limit);
+}
+
+/* ---------- Formatting + chrome ---------- */
 
 export function formatClock(totalSeconds) {
   const seconds = Math.max(0, Math.floor(totalSeconds || 0));

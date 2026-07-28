@@ -1,13 +1,14 @@
 // Catalog shell shared by every /user_dashboard/ view; data-view selects the page.
+// Everything here is open — no sign-in, no entitlement checks.
 import {
   $,
-  apiWrite,
   cardMarkup,
   detailUrl,
   escapeHtml,
   fetchJson,
-  fetchMe,
-  fetchSession,
+  getMyList,
+  listProgress,
+  removeFromMyList,
   toast,
 } from "./site.js";
 
@@ -15,10 +16,6 @@ const view = document.documentElement.dataset.view || "home";
 const state = {
   payload: null,
   query: "",
-  session: { authenticated: false },
-  me: null, // /api/me payload when authenticated (csrf + subscription)
-  continueItems: [],
-  myList: null, // null until loaded; [] when empty
 };
 
 const VIEW_TITLES = {
@@ -30,30 +27,8 @@ const VIEW_TITLES = {
   search: "Search",
 };
 
-const entitled = () => Boolean(state.me?.subscription?.entitled);
-
-/* ---------- Header / user menu ---------- */
-
-function renderUserMenu() {
-  const menu = $("#user-menu");
-  if (!state.session.authenticated) {
-    menu.innerHTML = `<a class="pill-link" href="/login.html?next=${encodeURIComponent(
-      location.pathname
-    )}">Sign In</a>`;
-    return;
-  }
-  menu.innerHTML = `
-    <a class="pill-link" href="/account/">Account</a>
-    <button class="pill-link" id="sign-out" type="button">Sign Out</button>`;
-  $("#sign-out").addEventListener("click", async () => {
-    try {
-      await apiWrite("/api/auth/logout");
-    } catch {
-      // Send the viewer home regardless.
-    }
-    location.href = "/";
-  });
-}
+const contentById = (id) =>
+  (state.payload?.content || []).find((item) => item.id === id) || null;
 
 /* ---------- Loading / error states ---------- */
 
@@ -81,15 +56,12 @@ function showError(message) {
 
 /* ---------- Rows ---------- */
 
-function row(title, items, { progress = false, removable = false } = {}) {
+// Items may carry a `progress_fraction` (0–1) for the Continue Watching row.
+function row(title, items, { removable = false } = {}) {
   if (!items.length) return "";
   const cards = items
     .map((item) => {
-      const fraction =
-        progress && item.duration_seconds > 0
-          ? item.position_seconds / item.duration_seconds
-          : undefined;
-      const card = cardMarkup(item, { progress: fraction });
+      const card = cardMarkup(item, { progress: item.progress_fraction });
       if (!removable) return card;
       return `
         <div class="card-holder">
@@ -124,41 +96,44 @@ function filteredContent() {
   return all;
 }
 
+/* ---------- Local state rows (My List, Continue Watching) ---------- */
+
+function myListItems() {
+  return getMyList()
+    .map(contentById)
+    .filter(Boolean);
+}
+
+function continueItems() {
+  return listProgress(12)
+    .map((entry) => {
+      const item = contentById(entry.id);
+      if (!item) return null;
+      return {
+        ...item,
+        progress_fraction:
+          entry.duration > 0 ? entry.position / entry.duration : undefined,
+      };
+    })
+    .filter(Boolean);
+}
+
 function renderMyList() {
   const target = $("#catalog-rows");
-  if (!state.session.authenticated) {
-    target.innerHTML = `
-      <div class="empty empty-cta">
-        <p>Sign in to keep a list of titles you want to watch.</p>
-        <a class="button button-primary" href="/login.html?next=${encodeURIComponent(
-          location.pathname
-        )}">Sign In</a>
-      </div>`;
-    return;
-  }
-  const items = state.myList || [];
+  const items = myListItems();
   target.innerHTML = items.length
     ? row("My List", items, { removable: true })
-    : '<div class="empty">Your list is empty. Browse the catalog and tap “＋ My List” on any title.</div>';
+    : '<div class="empty">Nothing saved yet — tap the ＋ on any title.</div>';
   target.querySelectorAll("[data-remove]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      const id = button.dataset.remove;
-      const { ok, data } = await apiWrite(`/api/me/list/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        csrf: state.me?.csrf,
-      });
-      if (ok) {
-        state.myList = (state.myList || []).filter((item) => item.id !== id);
-        toast("Removed from My List");
-        renderMyList();
-      } else {
-        button.disabled = false;
-        toast(data?.error || "Could not update your list. Please try again.");
-      }
+    button.addEventListener("click", () => {
+      removeFromMyList(button.dataset.remove);
+      toast("Removed from My List");
+      renderMyList();
     });
   });
 }
+
+/* ---------- View rendering ---------- */
 
 function renderRows() {
   const target = $("#catalog-rows");
@@ -171,10 +146,8 @@ function renderRows() {
   }
 
   if (view === "home") {
-    const continueRow =
-      state.session.authenticated && state.continueItems.length
-        ? row("Continue Watching", state.continueItems, { progress: true })
-        : "";
+    const resumable = continueItems();
+    const continueRow = resumable.length ? row("Continue Watching", resumable) : "";
     const rows = (state.payload?.collections || [])
       .filter((collection) => collection.slug !== "featured")
       .map((collection) => row(collection.title, collection.items))
@@ -230,14 +203,16 @@ function renderHero() {
 
   const heroMedia = $("#hero-media");
   const still = hero.backdrop_url || hero.poster_url || "";
-  // Autoplaying the preview requests the media file, which is gated to
-  // subscribers — only try when we know this viewer is entitled.
-  if (hero.video_url && entitled()) {
+  if (hero.video_url) {
     heroMedia.innerHTML = `
       <video muted loop playsinline poster="${escapeHtml(still)}">
         <source src="${escapeHtml(hero.video_url)}">
       </video>`;
     const video = heroMedia.querySelector("video");
+    // Fall back to the still if the browser refuses to autoplay the preview.
+    video.addEventListener("error", () => {
+      if (still) heroMedia.innerHTML = `<img src="${escapeHtml(still)}" alt="">`;
+    });
     setTimeout(() => video.play().catch(() => {}), 1200);
   } else if (still) {
     heroMedia.innerHTML = `<img src="${escapeHtml(still)}" alt="">`;
@@ -268,23 +243,7 @@ async function load() {
   $("#catalog-status").textContent = "Loading titles…";
   renderSkeletons();
 
-  const [session, catalog] = await Promise.all([fetchSession(), fetchJson("/api/content").catch(() => ({ ok: false }))]);
-  state.session = session;
-  renderUserMenu();
-
-  if (session.authenticated) {
-    const wantsContinue = view === "home";
-    const wantsList = view === "mylist";
-    const [me, cont, list] = await Promise.all([
-      fetchMe(),
-      wantsContinue ? fetchJson("/api/me/continue").catch(() => ({ ok: false })) : null,
-      wantsList ? fetchJson("/api/me/list").catch(() => ({ ok: false })) : null,
-    ]);
-    state.me = me;
-    state.continueItems = cont?.ok ? cont.data?.items || [] : [];
-    state.myList = list?.ok ? list.data?.items || [] : [];
-  }
-
+  const catalog = await fetchJson("/api/content").catch(() => ({ ok: false }));
   if (!catalog.ok || !catalog.data) {
     showError("The catalog could not be loaded. Check your connection and try again.");
     return;

@@ -1,4 +1,4 @@
-/* Shared styles for the landing, auth, account, and detail pages.
+/* Shared styles for the landing and detail pages.
    Extends catalog.css — load that first. */
 
 /* ---------- Landing ---------- */
@@ -85,175 +85,8 @@
   object-fit: cover;
 }
 
-/* ---------- Auth (login / signup) ---------- */
-
-.auth-page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 90px 24px 50px;
-  background:
-    radial-gradient(90% 70% at 50% 0%, #24090c 0%, var(--ink) 60%);
-}
-
-.auth-page .brand { position: absolute; top: 24px; left: clamp(20px, 4vw, 64px); }
-
-.auth-card {
-  width: min(420px, 100%);
-  padding: clamp(28px, 5vw, 48px);
-  border: 1px solid #232323;
-  border-radius: 10px;
-  background: rgba(12, 12, 12, .93);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
-}
-
-.auth-card h1 { margin: 0 0 22px; font-size: 30px; letter-spacing: -.02em; }
-
-.field { display: block; margin-bottom: 16px; }
-
-.field span {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.field input {
-  width: 100%;
-  padding: 13px 14px;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 5px;
-  background: #181818;
-  font-size: 15px;
-}
-
-.field input:focus { outline: 2px solid var(--red); border-color: transparent; }
-
-.form-error {
-  margin: 0 0 16px;
-  padding: 10px 12px;
-  border-radius: 5px;
-  background: #4d1418;
-  color: #ffb3b8;
-  font-size: 14px;
-}
-
-.form-message {
-  margin: 0 0 16px;
-  padding: 10px 12px;
-  border-radius: 5px;
-  background: #10351f;
-  color: #93e8b4;
-  font-size: 14px;
-}
-
-.form-error[hidden], .form-message[hidden] { display: none; }
-
+/* Buttons that are real <button> elements (retry, My List). */
 button.button { border: 0; cursor: pointer; }
-.button-danger { color: #fff; background: #5c1116; }
-.button:disabled { opacity: .55; cursor: default; transform: none; }
-
-.auth-card .button-primary {
-  width: 100%;
-  margin-top: 6px;
-  padding: 13px;
-  color: #fff;
-  background: var(--red);
-  font-size: 16px;
-}
-
-.auth-alt { margin: 20px 0 0; color: var(--muted); font-size: 14px; }
-.auth-alt a { color: #fff; text-decoration: underline; }
-
-/* ---------- Account ---------- */
-
-.account {
-  width: min(780px, 100%);
-  margin: 0 auto;
-  padding: 110px clamp(20px, 4vw, 40px) 80px;
-}
-
-.account h1 { margin: 0 0 24px; font-size: clamp(30px, 4vw, 42px); letter-spacing: -.03em; }
-
-.panel {
-  margin-bottom: 24px;
-  padding: 24px;
-  border: 1px solid #242424;
-  border-radius: 10px;
-  background: #121212;
-}
-
-.panel h2 { margin: 0 0 14px; font-size: 20px; }
-.panel[hidden] { display: none; }
-.panel form { display: grid; gap: 4px; max-width: 420px; }
-
-.hint { color: var(--muted); font-size: 14px; }
-
-.notice {
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  border-radius: 6px;
-  background: #12341f;
-  color: #9fe8b9;
-  font-size: 14px;
-}
-
-.notice.warn { background: #3a2c10; color: #ffd48a; }
-.notice[hidden] { display: none; }
-
-.badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  vertical-align: middle;
-}
-
-.badge-ok { background: #0f3d24; color: #5fe39a; }
-.badge-off { background: #3d0f14; color: #ff9aa2; }
-
-.sub-facts { display: grid; gap: 8px; margin: 0 0 18px; }
-.sub-facts div { display: flex; gap: 10px; align-items: baseline; }
-.sub-facts dt { min-width: 110px; margin: 0; color: var(--muted); font-size: 13px; }
-.sub-facts dd { margin: 0; font-size: 15px; }
-
-.plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.plan-card {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-  padding: 18px;
-  border: 1px solid #2c2c2c;
-  border-radius: 8px;
-  background: #181818;
-}
-
-.plan-card h3 { margin: 0; font-size: 17px; }
-.plan-price { font-size: 26px; font-weight: 800; }
-.plan-price small { color: var(--muted); font-size: 13px; font-weight: 400; }
-
-.demo-panel {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
-  margin-top: 14px;
-  padding: 18px;
-  border: 1px dashed #6b5a2c;
-  border-radius: 8px;
-  background: #161310;
-}
-
-.demo-panel h3 { margin: 0; }
-.demo-panel p { margin: 0; color: var(--muted); font-size: 14px; }
-.demo-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ---------- Detail / player ---------- */
 
@@ -288,39 +121,7 @@ button.button { border: 0; cursor: pointer; }
   box-shadow: 0 25px 80px #000;
 }
 
-.player-locked {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 9;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #0d0d0d;
-  box-shadow: 0 25px 80px #000;
-}
-
-.player-locked img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: .32;
-}
-
-.player-locked-inner {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  gap: 12px;
-  justify-items: center;
-  padding: 20px;
-  text-align: center;
-}
-
-.player-locked-inner h2 { margin: 0; font-size: clamp(22px, 3vw, 30px); }
-.player-locked-inner p { margin: 0; color: #d6d6d6; max-width: 46ch; }
-
+/* Used for "coming soon" and for playback failures. */
 .player-empty {
   display: grid;
   place-items: center;
@@ -357,7 +158,6 @@ button.button { border: 0; cursor: pointer; }
 
 .detail-meta { display: flex; gap: 12px; flex-wrap: wrap; color: #ccc; }
 .detail-description { font-size: clamp(17px, 2vw, 21px); line-height: 1.55; }
-.list-button { border: 0; cursor: pointer; }
 .related-row { margin-top: 56px; }
 
 .toast {
@@ -377,5 +177,4 @@ button.button { border: 0; cursor: pointer; }
 
 @media (max-width: 800px) {
   .detail { padding-top: 84px; }
-  .account { padding-top: 92px; }
 }

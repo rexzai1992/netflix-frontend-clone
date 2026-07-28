@@ -56,22 +56,6 @@ button, input { font: inherit; }
 
 .search-link { font-size: 28px; line-height: 1; }
 
-.user-menu { display: flex; align-items: center; gap: 10px; }
-
-.pill-link {
-  display: inline-block;
-  padding: 7px 13px;
-  color: #fff;
-  border: 1px solid var(--edge);
-  border-radius: 6px;
-  background: transparent;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.pill-link:hover { background: rgba(255, 255, 255, .1); }
-
 .nav-toggle {
   display: none;
   color: #fff;
@@ -317,9 +301,6 @@ button, input { font: inherit; }
 .error-panel p { margin: 0; }
 .error-panel[hidden] { display: none; }
 
-.empty-cta { display: grid; gap: 16px; justify-items: center; }
-.empty-cta p { margin: 0; }
-
 .search-panel {
   padding: 95px 0 40px;
 }
@@ -375,7 +356,6 @@ footer {
   }
   .main-nav.open { display: grid; gap: 18px; }
   .top-actions { order: 3; }
-  .pill-link { padding: 6px 10px; font-size: 12px; }
   .hero { min-height: 72vh; }
   .hero-content { padding-bottom: 95px; }
   .hero-shade {

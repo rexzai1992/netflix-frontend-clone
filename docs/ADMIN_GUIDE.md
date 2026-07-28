@@ -46,9 +46,11 @@ when. Use it to trace unexpected content changes.
   out every other admin session.
 - Viewer passwords are never visible; viewers change their own on /account/.
 
-## Billing modes
+## Who can watch
 
-- Without Stripe secrets configured, the site runs **demo billing**: viewers
-  "subscribe" through a clearly-labelled demo checkout with no real payment.
-- With Stripe configured (see docs/OPERATIONS.md), real checkout and webhooks
-  take over automatically.
+Anyone with the link. There are no viewer accounts, sign-in, or payments — the
+site is a private showcase, so sharing the URL is all that's needed. My List and
+Continue Watching are remembered per browser, not per person.
+
+Only `/admin/` is protected, by the admin password above. The dormant
+account/subscription code can be re-enabled later; see the README.

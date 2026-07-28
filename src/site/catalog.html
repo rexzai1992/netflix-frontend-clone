@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#070707">
-    <meta name="description" content="Browse movies and TV shows on StreamFlix. Watch anywhere, cancel anytime.">
+    <meta name="description" content="Browse everything playing on StreamFlix. Just press play.">
     <title>Browse — StreamFlix</title>
     <link rel="icon" href="../content/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="../content/catalog.css">
@@ -23,10 +23,7 @@
         <a data-route="mylist" href="mylist.html">My List</a>
       </nav>
       <div class="top-actions">
-        <a class="search-link" href="search.html" aria-label="Search">⌕</a>
-        <nav class="user-menu" id="user-menu" aria-label="Account">
-          <a class="pill-link" href="/login.html">Sign In</a>
-        </nav>
+        <a class="search-link" data-route="search" href="search.html" aria-label="Search">⌕</a>
       </div>
     </header>
 
@@ -62,7 +59,7 @@
     </main>
 
     <footer>
-      <p><span data-site-name-plain>StreamFlix</span> — a demo streaming service.</p>
+      <p><span data-site-name-plain>StreamFlix</span> — made with love, just for you.</p>
       <p id="footer-attribution" hidden></p>
       <p>Includes open movies by Blender Foundation (CC-BY)</p>
     </footer>

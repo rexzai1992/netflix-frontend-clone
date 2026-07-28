@@ -1,18 +1,24 @@
 # StreamFlix
 
-A subscription streaming platform on Cloudflare Workers:
+A private, streaming-service-style showcase site on Cloudflare Workers, built to
+present one special title — *Our Golden Night* — inside a familiar cinematic
+browsing experience.
 
-- Public catalog with search, collections, and a featured hero
-- Viewer accounts with subscriptions (Stripe, or a built-in demo billing mode)
-- Video streaming gated on an active subscription, served from R2 with byte-range support
-- My List and Continue Watching synced to each account
+- Anyone with the link can watch: no accounts, no sign-in, no payments
+- Catalog with search, collections, and a featured hero
+- Video served straight from R2 with byte-range seeking
+- My List and Continue Watching kept in the browser (localStorage)
 - A password-protected content studio at `/admin/` for managing every part of the site
 - Cloudflare D1 for data, R2 for media — no other infrastructure
 
 Production: <https://streamflix.izzulfitreee.workers.dev>
 
-All bundled sample films are Blender Foundation open movies (CC-BY); *Our Golden Night*
-is an original StreamFlix title. Attribution is shown in the site footer.
+The supporting films are Blender Foundation open movies (CC-BY / CC-BY-SA);
+*Our Golden Night* is an original title. Attribution is shown in the site footer.
+
+> The account/subscription API still exists server-side (`src/worker/auth.ts`,
+> `billing.ts`, `me.ts`) and is covered by tests, but nothing in the site uses it.
+> See "Optional: re-enabling accounts" below.
 
 ## Architecture
 
@@ -58,9 +64,21 @@ Remote migrations: `npx wrangler d1 migrations apply streamflix --remote`
 
 | Secret | Purpose |
 | --- | --- |
-| `ADMIN_PASSWORD` | Bootstrap admin password (changeable afterwards in the studio Security panel) |
-| `SESSION_SECRET` | ≥32 random chars; peppers password hashes |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY` | Optional; unset = demo billing mode (no real payments) |
+| `ADMIN_PASSWORD` | Admin password for `/admin/` (changeable afterwards in the studio Security panel) |
+| `SESSION_SECRET` | ≥32 random chars; signs admin sessions and peppers password hashes |
+
+## Optional: re-enabling accounts
+
+Visitors need no account, so the auth/billing code sits dormant. To turn it back on:
+
+1. Restore the viewer sign-in/sign-up/account pages, which were removed in the
+   commit that opened up access (`git log --diff-filter=D -- src/site/login.html`),
+   re-add their copy lines in `scripts/build.mjs`, and link them from the header.
+2. Restore the entitlement check in `src/worker/media.ts` (`serveMedia`) so video
+   requires an active subscription.
+3. For real payments, set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+   `STRIPE_PRICE_MONTHLY`, and `STRIPE_PRICE_YEARLY`; without them billing runs in
+   a clearly-labelled demo mode. See docs/OPERATIONS.md.
 
 ## Media requirements
 

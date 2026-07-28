@@ -7,7 +7,10 @@
 | Worker | `streamflix` | Serves site, API, and media |
 | D1 database | `streamflix` | id in wrangler.jsonc |
 | R2 bucket | `streamflix-media` | `catalog/`, `uploads/`, `generated/` prefixes |
-| Secrets | `ADMIN_PASSWORD`, `SESSION_SECRET`, optional `STRIPE_*` | `wrangler secret put <NAME>` |
+| Secrets | `ADMIN_PASSWORD`, `SESSION_SECRET` | `wrangler secret put <NAME>` |
+
+Visitors need no account; only `/admin/` is protected. The account/subscription
+code ships dormant (see README → "Optional: re-enabling accounts").
 
 No credentials live in the repo; D1/R2 access is exclusively via Worker bindings.
 
@@ -64,7 +67,7 @@ git branch → npm run check (tsc + build + tests) → preview → migrate D1 �
 
 - API catalog responses: `max-age=30, stale-while-revalidate=120`.
 - Images: `public, max-age=31536000, immutable` (keys are versioned).
-- Video: `private, max-age=3600` — never publicly cacheable (subscriber-gated).
+- Video: `public, max-age=86400` — openly viewable, so edge caching is allowed.
 - Everything else (auth, admin, account): `no-store`.
 
 ## Admin access hardening (recommended next step)

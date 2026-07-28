@@ -1,24 +1,18 @@
-import { $, escapeHtml, mediaUrl, fetchSession, detailUrl } from "./site.js";
+// Gift landing page: hero, a teaser row, and two ways straight into the films.
+import { $, escapeHtml, mediaUrl, detailUrl } from "./site.js";
 
 const setMeta = (selector, value) => {
   if (value) document.querySelector(selector)?.setAttribute("content", value);
 };
-
-function applySession(session) {
-  if (!session.authenticated) return;
-  const browse = '<a class="button button-primary" href="/user_dashboard/browse.html">Browse</a>';
-  $("#landing-actions").innerHTML = browse;
-  const top = $("#top-auth");
-  top.textContent = "Browse";
-  top.href = "/user_dashboard/browse.html";
-}
 
 function applyContent(payload) {
   const settings = payload.settings || {};
   const content = (payload.content || []).filter((item) => item.published);
 
   const siteName = settings.site_name || "StreamFlix";
-  document.title = `${siteName} — Unlimited movies, TV shows, and more`;
+  document.title = settings.landing_title
+    ? `${settings.landing_title} — ${siteName}`
+    : `${siteName} — a little cinema made just for us`;
   document.querySelectorAll("[data-site-name]").forEach((node) => {
     node.textContent = siteName.toUpperCase();
   });
@@ -54,8 +48,18 @@ function applyContent(payload) {
     $("#landing-hero").style.backgroundImage = `url("${encodeURI(backdrop).replace(/"/g, "%22")}")`;
   }
 
-  // Poster teaser row.
-  const teasers = content.filter((item) => item.poster_url).slice(0, 10);
+  // Secondary CTA: straight into the featured title.
+  if (featured) {
+    const play = $("#landing-featured");
+    play.href = detailUrl(featured);
+    play.textContent = `▶ Play ${featured.title}`;
+    play.hidden = false;
+  }
+
+  // Poster teaser row — everything else showing tonight.
+  const teasers = content
+    .filter((item) => item.poster_url && item.id !== featured?.id)
+    .slice(0, 10);
   if (teasers.length) {
     $("#teaser-row").innerHTML = teasers
       .map(
@@ -70,13 +74,9 @@ function applyContent(payload) {
 }
 
 async function init() {
-  const [session, payload] = await Promise.all([
-    fetchSession(),
-    fetch("/api/content")
-      .then((response) => (response.ok ? response.json() : null))
-      .catch(() => null),
-  ]);
-  applySession(session);
+  const payload = await fetch("/api/content")
+    .then((response) => (response.ok ? response.json() : null))
+    .catch(() => null);
   if (payload) applyContent(payload);
 }
 

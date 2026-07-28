@@ -6,9 +6,6 @@ import test from "node:test";
 test("build emits every public and admin entry point", async () => {
   for (const path of [
     "dist/index.html",
-    "dist/login.html",
-    "dist/signup.html",
-    "dist/account/index.html",
     "dist/user_dashboard/browse.html",
     "dist/user_dashboard/movies.html",
     "dist/user_dashboard/tvshow.html",
@@ -42,6 +39,20 @@ test("no legacy branding, trademarks, or dead asset paths ship in dist", async (
     const text = await readFile(path, "utf8");
     assert.doesNotMatch(text, /netflix/i, `${path} references Netflix`);
     assert.doesNotMatch(text, /(src|href)="\/(images|assets)\//, `${path} references deleted legacy assets`);
+  }
+});
+
+test("the public site ships no accounts, paywall, or auth surface", async () => {
+  await assert.rejects(access("dist/login.html"), "login page must not ship");
+  await assert.rejects(access("dist/signup.html"), "signup page must not ship");
+  await assert.rejects(access("dist/account/index.html"), "account page must not ship");
+
+  for await (const path of walk("dist")) {
+    if (!/\.(html|js)$/.test(path) || path.includes("/admin/")) continue;
+    const text = await readFile(path, "utf8");
+    for (const forbidden of ["/api/auth", "/api/me", "/api/billing", "Subscribe to watch", "Sign in to watch"]) {
+      assert.ok(!text.includes(forbidden), `${path} still references ${forbidden}`);
+    }
   }
 });
 

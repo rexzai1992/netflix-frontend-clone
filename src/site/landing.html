@@ -4,16 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#050505">
-    <meta name="description" content="Stream movies and TV shows on StreamFlix. Watch anywhere, cancel anytime.">
+    <meta name="description" content="A little cinema made just for us. Press play — everything here is ready to watch.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="StreamFlix">
-    <meta property="og:title" content="StreamFlix — Unlimited movies, TV shows, and more">
-    <meta property="og:description" content="Stream movies and TV shows on StreamFlix. Watch anywhere, cancel anytime.">
+    <meta property="og:title" content="StreamFlix — a little cinema made just for us">
+    <meta property="og:description" content="A little cinema made just for us. Press play — everything here is ready to watch.">
     <meta property="og:image" content="/content/favicon.svg">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="StreamFlix — Unlimited movies, TV shows, and more">
-    <meta name="twitter:description" content="Stream movies and TV shows on StreamFlix. Watch anywhere, cancel anytime.">
-    <title>StreamFlix — Unlimited movies, TV shows, and more</title>
+    <meta name="twitter:title" content="StreamFlix — a little cinema made just for us">
+    <meta name="twitter:description" content="A little cinema made just for us. Press play — everything here is ready to watch.">
+    <title>StreamFlix — a little cinema made just for us</title>
     <link rel="icon" href="/content/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/content/catalog.css">
     <link rel="stylesheet" href="/content/site.css">
@@ -22,28 +22,28 @@
   <body class="landing-page">
     <header class="landing-top">
       <a class="brand" href="/" data-site-name>STREAMFLIX</a>
-      <a class="button button-secondary" id="top-auth" href="/login.html">Sign In</a>
+      <a class="button button-secondary" href="/user_dashboard/browse.html">Browse</a>
     </header>
     <main>
       <section class="landing-hero" id="landing-hero">
         <div class="landing-shade"></div>
         <div class="landing-copy">
-          <p class="eyebrow" id="landing-kicker">Now streaming</p>
-          <h1 id="landing-title">Unlimited movies, TV shows, and more.</h1>
-          <p class="landing-subtitle" id="landing-subtitle">Watch anywhere. Cancel anytime.</p>
+          <p class="eyebrow" id="landing-kicker">Now showing</p>
+          <h1 id="landing-title">A little cinema, made just for us.</h1>
+          <p class="landing-subtitle" id="landing-subtitle">No sign-in, nothing to set up. Just press play.</p>
           <div class="landing-actions" id="landing-actions">
-            <a class="button button-primary" href="/signup.html">Get Started</a>
-            <a class="button button-secondary" href="/login.html">Sign In</a>
+            <a class="button button-primary" href="/user_dashboard/browse.html">Start watching</a>
+            <a class="button button-secondary" id="landing-featured" href="/user_dashboard/browse.html" hidden>▶ Play</a>
           </div>
         </div>
       </section>
       <section class="landing-teaser" id="landing-teaser" aria-label="A taste of the catalog" hidden>
-        <h2>Fresh on <span data-site-name-plain>StreamFlix</span></h2>
+        <h2>Also playing tonight</h2>
         <div class="teaser-row" id="teaser-row"></div>
       </section>
     </main>
     <footer>
-      <p><span data-site-name-plain>StreamFlix</span> — a demo streaming service.</p>
+      <p><span data-site-name-plain>StreamFlix</span> — made with love, just for you.</p>
       <p id="footer-attribution" hidden></p>
       <p>Includes open movies by Blender Foundation (CC-BY)</p>
     </footer>

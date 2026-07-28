@@ -33,16 +33,16 @@ for (const [path, view] of Object.entries(pages)) {
 
 await copy("src/site/detail.html", "user_dashboard/single.html");
 await copy("src/site/landing.html", "index.html");
-await copy("src/site/login.html", "login.html");
-await copy("src/site/signup.html", "signup.html");
-await copy("src/site/account.html", "account/index.html");
 await copy("src/site/admin.html", "admin/index.html");
 await copy("src/site/admin.css", "admin/admin.css");
 await copy("src/site/admin.js", "admin/admin.js");
 
-// All shared styles/scripts live under /content/.
+// All shared styles/scripts live under /content/. The admin studio bundles its
+// own assets, and the unshipped account/auth pages are skipped entirely.
+const unshipped = new Set(["account.js", "auth.js"]);
+
 for (const entry of await readdir(site)) {
-  if (entry.startsWith("admin.")) continue;
+  if (entry.startsWith("admin.") || unshipped.has(entry)) continue;
   if (entry.endsWith(".css") || entry.endsWith(".js") || entry.endsWith(".svg")) {
     await copy(`src/site/${entry}`, `content/${entry}`);
   }

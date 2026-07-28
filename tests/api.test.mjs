@@ -137,7 +137,7 @@ test("signup, session, csrf enforcement, my list, progress", async () => {
   assert.equal(remove.status, 200);
 });
 
-test("subscription gating on video media", async () => {
+test("video media is openly viewable by anyone with the link", async () => {
   const admin = client();
   const login = await admin("/api/admin/login", { method: "POST", body: { password: ADMIN_PASSWORD } });
   assert.equal(login.status, 200);
@@ -172,40 +172,16 @@ test("subscription gating on video media", async () => {
   });
   assert.equal(created.status, 201);
 
-  // Anonymous viewers can see images but not stream video.
+  // Anyone with the link can stream, with no account at all.
   const anonymous = client();
-  const blocked = await anonymous(`/media/${key}`);
-  assert.equal(blocked.status, 403);
+  const open = await anonymous(`/media/${key}`, { raw: true });
+  assert.equal(open.status, 200);
+  assert.match(open.headers.get("cache-control") || "", /public/);
 
-  // A subscribed viewer can stream.
-  const viewer = client();
-  const signup = await viewer("/api/auth/signup", {
-    method: "POST",
-    body: { email: `sub-${Date.now()}@example.com`, password: "hunter2hunter2" },
-  });
-  const csrf = signup.data.csrf;
-  const stillBlocked = await viewer(`/media/${key}`);
-  assert.equal(stillBlocked.status, 403);
-
-  const activate = await viewer("/api/billing/dev-activate", {
-    method: "POST",
-    body: { plan: "monthly" },
-    headers: { "x-csrf-token": csrf },
-  });
-  assert.equal(activate.status, 200);
-  assert.equal(activate.data.subscription.entitled, true);
-
-  const allowed = await viewer(`/media/${key}`, { raw: true });
-  assert.equal(allowed.status, 200);
-
-  const me = await viewer("/api/me");
-  assert.equal(me.data.subscription.status, "active");
-
-  const cancel = await viewer("/api/billing/cancel", { method: "POST", headers: { "x-csrf-token": csrf } });
-  assert.equal(cancel.status, 200);
-  assert.equal(cancel.data.subscription.cancel_at_period_end, true);
-  // Still entitled until period end.
-  assert.equal(cancel.data.subscription.entitled, true);
+  // Range requests work anonymously too, so seeking is available to everyone.
+  const ranged = await fetch(`${BASE}/media/${key}`, { headers: { range: "bytes=0-15" } });
+  assert.equal(ranged.status, 206);
+  assert.equal(ranged.headers.get("content-length"), "16");
 
   // Admin cleanup of the test title.
   const removed = await admin("/api/admin/content/gate-test", {

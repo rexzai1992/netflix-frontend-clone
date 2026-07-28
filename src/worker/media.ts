@@ -1,6 +1,4 @@
 import { Env, error } from "./lib";
-import { getAdmin, getUser } from "./auth";
-import { getSubscription, isEntitled } from "./billing";
 
 function guessType(key: string) {
   const extension = key.split(".").pop()?.toLowerCase() || "";
@@ -9,23 +7,13 @@ function guessType(key: string) {
   return "";
 }
 
-async function canStreamVideo(request: Request, env: Env) {
-  if (await getAdmin(request, env)) return true;
-  const user = await getUser(request, env);
-  if (!user) return false;
-  return isEntitled(await getSubscription(env, user.id));
-}
-
 export async function serveMedia(request: Request, env: Env, key: string): Promise<Response> {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return error("Method not allowed", 405);
   }
 
-  // Videos are the paid product: only admins and entitled subscribers may stream them.
+  // Everything is openly viewable: anyone with the link can watch.
   const isVideo = guessType(key).startsWith("video/");
-  if (isVideo && !(await canStreamVideo(request, env))) {
-    return error("An active subscription is required to stream video", 403);
-  }
 
   const options: R2GetOptions = {};
   if (request.headers.has("range")) options.range = request.headers;
@@ -38,11 +26,12 @@ export async function serveMedia(request: Request, env: Env, key: string): Promi
   object.writeHttpMetadata(headers);
   headers.set("etag", object.httpEtag);
   headers.set("accept-ranges", "bytes");
-  if (isVideo) {
-    headers.set("cache-control", "private, max-age=3600");
-  } else {
-    headers.set("cache-control", headers.get("cache-control") || "public, max-age=31536000, immutable");
-  }
+  headers.set(
+    "cache-control",
+    isVideo
+      ? "public, max-age=86400"
+      : headers.get("cache-control") || "public, max-age=31536000, immutable",
+  );
 
   let status = 200;
   if (request.headers.has("range") && object.range) {
